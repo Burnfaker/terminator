@@ -53,3 +53,81 @@ Cristian Grada provided the old icon under the same licence.
 Cory Kontros provided the new icon under the CC-by-SA licence.
 
 For other authorship information, see debian/copyright
+
+## Cloning notes
+
+Since terminator is keep on bzr, updates to this mirror are done with
+
+```
+$ git fast-import
+```
+
+bzr clone is keep on a separate dir. Once updated
+
+```
+$ bzr pull
+```
+
+A new import is made after remove last one
+
+```
+$ rm -rf .git/ 
+$ git init
+$ bzr fast-export --plain . | git fast-import
+```
+
+That git clone is imported on real repo
+
+```
+$ git remote add local file://<path-to-git-import>
+$ git fetch local
+```
+
+Then last common commit is detected using
+
+```
+$ git log --date-order
+```
+
+```
+ * local/master <new-import>
+ *
+ *
+ |* master <changes to default project>
+ |*
+ *| <common-new-commit>
+ |* <common-old-commit>
+ *|
+ |*
+```
+
+and rebasing with
+
+```
+$ git rebase <commom-new-commit> local/master --onto <common-old-commit>
+```
+
+resulting
+
+```
+    * (HEAD)
+    *
+    *
+ *  | local/master <new-import>
+ *  |
+ *  |
+ |* | master <changes to default project>
+ |* |
+ *|/ <common-new-commit>
+ |* <common-old-commit>
+ *|
+ |*
+```
+
+but there's a problem with launchpad workflow. There are some commits for 
+releases that have no email author and that's problematic on git. So this 
+script must be applied to detect and fix that commits.
+
+```
+. res/replace-authors-without-email.sh
+```
