@@ -1,5 +1,7 @@
-Terminator
+# Terminator
 by Chris Jones <cmsj@tenshu.net> and others.
+
+## Intro
 
 The goal of this project is to produce a useful tool for arranging terminals. 
 It is inspired by programs such as gnome-multi-term, quadkonsole, etc. in that
@@ -29,6 +31,8 @@ manpage "terminator". For configuration options, see the manpage
 Ask questions at: https://answers.launchpad.net/terminator/
 Please report all bugs to https://bugs.launchpad.net/terminator/+filebug
 
+## History
+
 Terminator began by shamelessly copying code from the vte-demo.py in the vte 
 widget package, and the gedit terminal plugin (which was fantastically 
 useful at figuring out vte's API).
@@ -42,6 +46,10 @@ licenced under GPL v2 or later.
 
 I am thus licensing Terminator as GPL v2 only.
 
+## Credits
+
 Cristian Grada provided the old icon under the same licence.
+
 Cory Kontros provided the new icon under the CC-by-SA licence.
+
 For other authorship information, see debian/copyright
