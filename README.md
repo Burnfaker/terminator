@@ -3,7 +3,7 @@ by Chris Jones <cmsj@tenshu.net> and others.
 
 ## Please be informed that, this repo only works with Python 3.X!
 
-## The repository was not fully converted to GTK3 +! Use at your own risk!
+## The repository was not fully converted to GTK3 +! Use it at your own risk!
 
 ## Intro
 
