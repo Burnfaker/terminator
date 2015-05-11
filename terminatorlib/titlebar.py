@@ -8,10 +8,10 @@ import gobject
 import random
 import itertools
 
-from version import APP_NAME
-from util import dbg
-from terminator import Terminator
-from editablelabel import EditableLabel
+from .version import APP_NAME
+from .util import dbg
+from .terminator import Terminator
+from .editablelabel import EditableLabel
 
 # pylint: disable-msg=R0904
 # pylint: disable-msg=W0613

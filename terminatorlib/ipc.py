@@ -7,11 +7,11 @@ import gtk
 import dbus.service
 from dbus.exceptions import DBusException
 import dbus.glib
-from borg import Borg
-from terminator import Terminator
-from config import Config
-from factory import Factory
-from util import dbg
+from .borg import Borg
+from .terminator import Terminator
+from .config import Config
+from .factory import Factory
+from .util import dbg
 
 CONFIG = Config()
 if not CONFIG['dbus']:
@@ -129,7 +129,7 @@ class DBusService(Borg, dbus.service.Object):
 
 def with_proxy(func):
     """Decorator function to connect to the session dbus bus"""
-    dbg('dbus client call: %s' % func.func_name)
+    dbg('dbus client call: %s' % func.__name__)
     def _exec(*args, **argd):
         bus = dbus.SessionBus()
         proxy = bus.get_object(BUS_NAME, BUS_PATH)
@@ -154,20 +154,20 @@ def terminal_hsplit(session, uuid):
 @with_proxy
 def terminal_vsplit(session, uuid):
     """Call the dbus method to vertically split a terminal"""
-    print session.terminal_vsplit(uuid)
+    print(session.terminal_vsplit(uuid))
 
 @with_proxy
 def get_terminals(session, uuid):
     """Call the dbus method to return a list of all terminals"""
-    print '\n'.join(session.get_terminals(uuid))
+    print('\n'.join(session.get_terminals(uuid)))
 
 @with_proxy
 def get_terminal_tab(session, uuid):
     """Call the dbus method to return the toplevel tab for a terminal"""
-    print session.get_terminal_tab(uuid)
+    print(session.get_terminal_tab(uuid))
 
 @with_proxy
 def get_terminal_tab_title(session, uuid):
     """Call the dbus method to return the title of a tab"""
-    print session.get_terminal_tab_title(uuid)
+    print(session.get_terminal_tab_title(uuid))
 

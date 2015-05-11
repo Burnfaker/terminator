@@ -3,7 +3,7 @@
 # GPL v2 only
 """terminal.py - classes necessary to provide Terminal widgets"""
 
-from __future__ import division
+
 import sys
 import os
 import signal
@@ -13,20 +13,20 @@ import gtk
 import gobject
 import pango
 import subprocess
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
-from util import dbg, err, gerr, spawn_new_terminator, make_uuid
-import util
-from config import Config
-from cwd import get_default_cwd
-from factory import Factory
-from terminator import Terminator
-from titlebar import Titlebar
-from terminal_popup_menu import TerminalPopupMenu
-from searchbar import Searchbar
-from translation import _
-from signalman import Signalman
-import plugin
+from .util import dbg, err, gerr, spawn_new_terminator, make_uuid
+from . import util
+from .config import Config
+from .cwd import get_default_cwd
+from .factory import Factory
+from .terminator import Terminator
+from .titlebar import Titlebar
+from .terminal_popup_menu import TerminalPopupMenu
+from .searchbar import Searchbar
+from .translation import _
+from .signalman import Signalman
+from . import plugin
 from terminatorlib.layoutlauncher import LayoutLauncher
 
 try:
@@ -208,7 +208,7 @@ class Terminal(gtk.VBox):
         try:
             dbg('close: killing %d' % self.pid)
             os.kill(self.pid, signal.SIGHUP)
-        except Exception, ex:
+        except Exception as ex:
             # We really don't want to care if this failed. Deep OS voodoo is
             # not what we should be doing.
             dbg('os.kill failed: %s' % ex)
@@ -297,7 +297,7 @@ class Terminal(gtk.VBox):
                     dbg('added plugin URL handler for %s (%s) as %d' % 
                         (name, urlplugin.__class__.__name__,
                         self.matches[name]))
-            except Exception, ex:
+            except Exception as ex:
                 err('Exception occurred adding plugin URL match: %s' % ex)
 
     def match_add(self, name, match):
@@ -320,6 +320,7 @@ class Terminal(gtk.VBox):
 
         self.vte.connect('key-press-event', self.on_keypress)
         self.vte.connect('button-press-event', self.on_buttonpress)
+        self.vte.connect('scroll-event', self.on_mousewheel)
         self.vte.connect('popup-menu', self.popup_menu)
 
         srcvtetargets = [("vte", gtk.TARGET_SAME_APP, self.TARGET_TYPE_VTE)]
@@ -441,9 +442,9 @@ class Terminal(gtk.VBox):
 
         groupitem = None
 
-        for key, value in {_('Broadcast all'):'all', 
+        for key, value in list({_('Broadcast all'):'all', 
                           _('Broadcast group'):'group',
-                          _('Broadcast off'):'off'}.items():
+                          _('Broadcast off'):'off'}.items()):
             groupitem = gtk.RadioMenuItem(groupitem, key)
             dbg('Terminal::populate_group_menu: %s active: %s' %
                     (key, self.terminator.groupsend ==
@@ -530,7 +531,7 @@ class Terminal(gtk.VBox):
     def set_groupsend(self, _widget, value):
         """Set the groupsend mode"""
         # FIXME: Can we think of a smarter way of doing this than poking?
-        if value in self.terminator.groupsend_type.values():
+        if value in list(self.terminator.groupsend_type.values()):
             dbg('Terminal::set_groupsend: setting groupsend to %s' % value)
             self.terminator.groupsend = value
 
@@ -879,6 +880,26 @@ class Terminal(gtk.VBox):
 
         return(False)
     
+    def on_mousewheel(self, widget, event):
+        """Handler for modifier + mouse wheel scroll events"""
+        if event.state & gtk.gdk.CONTROL_MASK == gtk.gdk.CONTROL_MASK:
+            # Ctrl + mouse wheel up/down
+            if event.direction == gtk.gdk.SCROLL_UP:
+                self.zoom_in()
+                return (True)
+            elif event.direction == gtk.gdk.SCROLL_DOWN:
+                self.zoom_out()
+                return (True)
+        if event.state & gtk.gdk.SHIFT_MASK == gtk.gdk.SHIFT_MASK:
+            # Shift + mouse wheel up/down
+            if event.direction == gtk.gdk.SCROLL_UP:
+                self.scroll_by_page(-1)
+                return (True)
+            elif event.direction == gtk.gdk.SCROLL_DOWN:
+                self.scroll_by_page(1)
+                return (True)
+        return(False)
+
     def popup_menu(self, widget, event=None):
         """Display the context menu"""
         menu = TerminalPopupMenu(self)
@@ -992,7 +1013,7 @@ class Terminal(gtk.VBox):
             # copy text to destination
             txt = selection_data.data.strip(' ')
             if txt[0:7] == 'file://':
-                txt = "'%s'" % urllib.unquote(txt[7:])
+                txt = "'%s'" % urllib.parse.unquote(txt[7:])
             else:
                 txt = txt.split('\n')[0]
             for term in self.terminator.get_target_terms(self):
@@ -1342,7 +1363,7 @@ class Terminal(gtk.VBox):
             url = 'ftp://' + url
         elif match == self.matches['addr_only']:
             url = 'http://' + url
-        elif match in self.matches.values():
+        elif match in list(self.matches.values()):
             # We have a match, but it's not a hard coded one, so it's a plugin
             try:
                 registry = plugin.PluginRegistry()
@@ -1357,7 +1378,7 @@ class Terminal(gtk.VBox):
 %s plugin' % urlplugin.handler_name)
                             url = newurl
                         break
-            except Exception, ex:
+            except Exception as ex:
                 err('Exception occurred preparing URL: %s' % ex)
 
         return(url)
@@ -1508,20 +1529,20 @@ class Terminal(gtk.VBox):
     def create_layout(self, layout):
         """Apply our layout"""
         dbg('Setting layout')
-        if layout.has_key('command') and layout['command'] != '':
+        if 'command' in layout and layout['command'] != '':
             self.layout_command = layout['command']
-        if layout.has_key('profile') and layout['profile'] != '':
+        if 'profile' in layout and layout['profile'] != '':
             if layout['profile'] in self.config.list_profiles():
                 self.set_profile(self, layout['profile'])
-        if layout.has_key('group') and layout['group'] != '':
+        if 'group' in layout and layout['group'] != '':
             # This doesn't need/use self.titlebar, but it's safer than sending
             # None
             self.really_create_group(self.titlebar, layout['group'])
-        if layout.has_key('title') and layout['title'] != '':
+        if 'title' in layout and layout['title'] != '':
             self.titlebar.set_custom_string(layout['title'])
-        if layout.has_key('directory') and layout['directory'] != '':
+        if 'directory' in layout and layout['directory'] != '':
             self.directory = layout['directory']
-        if layout.has_key('uuid') and layout['uuid'] != '':
+        if 'uuid' in layout and layout['uuid'] != '':
             self.uuid = make_uuid(layout['uuid'])
 
     def scroll_by_page(self, pages):

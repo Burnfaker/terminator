@@ -11,13 +11,13 @@ import os
 import gtk
 import gobject
 
-from util import dbg, err
-import config
-from keybindings import Keybindings, KeymapError
-from translation import _
-from encoding import TerminatorEncoding
-from terminator import Terminator
-from plugin import PluginRegistry
+from .util import dbg, err
+from . import config
+from .keybindings import Keybindings, KeymapError
+from .translation import _
+from .encoding import TerminatorEncoding
+from .terminator import Terminator
+from .plugin import PluginRegistry
 
 def color2hex(widget):
     """Pull the colour values out of a Gtk ColorPicker widget and return them
@@ -162,9 +162,9 @@ class PrefsEditor:
             librarypath = os.path.join(head, 'preferences.glade')
             gladefile = open(librarypath, 'r')
             gladedata = gladefile.read()
-        except Exception, ex:
-            print "Failed to find preferences.glade"
-            print ex
+        except Exception as ex:
+            print("Failed to find preferences.glade")
+            print(ex)
             return
 
         self.builder.add_from_string(gladedata)
@@ -185,7 +185,7 @@ class PrefsEditor:
         try:
             self.config.inhibit_save()
             self.set_values()
-        except Exception, e:
+        except Exception as e:
             err('Unable to set values: %s' % e)
         self.config.uninhibit_save()
 
@@ -491,7 +491,7 @@ class PrefsEditor:
         # NOTE: The palette selector is set after the colour pickers
         # Palette colour pickers
         colourpalette = self.config['palette'].split(':')
-        for i in xrange(1, 17):
+        for i in range(1, 17):
             widget = guiget('palette_colorpicker_%d' % i)
             widget.set_color(gtk.gdk.Color(colourpalette[i - 1]))
         # Now set the palette selector widget
@@ -826,7 +826,7 @@ class PrefsEditor:
         guiget = self.builder.get_object
         active = widget.get_active()
 
-        for key in self.palettevalues.keys():
+        for key in list(self.palettevalues.keys()):
             if self.palettevalues[key] == active:
                 value = key
 
@@ -835,20 +835,20 @@ class PrefsEditor:
         else:
             sensitive = False
 
-        for num in xrange(1, 17):
+        for num in range(1, 17):
             picker = guiget('palette_colorpicker_%d' % num)
             picker.set_sensitive(sensitive)
 
         if value in self.palettes:
             palette = self.palettes[value]
             palettebits = palette.split(':')
-            for num in xrange(1, 17):
+            for num in range(1, 17):
                 # Update the visible elements
                 picker = guiget('palette_colorpicker_%d' % num)
                 picker.set_color(gtk.gdk.Color(palettebits[num - 1]))
         elif value == 'custom':
             palettebits = []
-            for num in xrange(1, 17):
+            for num in range(1, 17):
                 picker = guiget('palette_colorpicker_%d' % num)
                 palettebits.append(color2hex(picker))
             palette = ':'.join(palettebits)
@@ -876,7 +876,7 @@ class PrefsEditor:
         guiget = self.builder.get_object
 
         # FIXME: We do this at least once elsewhere. refactor!
-        for num in xrange(1, 17):
+        for num in range(1, 17):
             picker = guiget('palette_colorpicker_%d' % num)
             value = color2hex(picker)
             palettebits.append(value)
@@ -1309,7 +1309,7 @@ class PrefsEditor:
         guiget = self.builder.get_object
         active = widget.get_active()
 
-        for key in self.colorschemevalues.keys():
+        for key in list(self.colorschemevalues.keys()):
             if self.colorschemevalues[key] == active:
                 value = key
 
@@ -1410,7 +1410,7 @@ class LayoutEditor:
         listitems = {}
         store.clear()
 
-        children = layout.keys()
+        children = list(layout.keys())
         i = 0
         while children != []:
             child = children.pop()
@@ -1509,17 +1509,17 @@ class LayoutEditor:
         command.set_sensitive(True)
         chooser.set_sensitive(True)
         workdir.set_sensitive(True)
-        if layout_item.has_key('command') and layout_item['command'] != '':
+        if 'command' in layout_item and layout_item['command'] != '':
             command.set_text(layout_item['command'])
         else:
             command.set_text('')
 
-        if layout_item.has_key('profile') and layout_item['profile'] != '':
+        if 'profile' in layout_item and layout_item['profile'] != '':
             chooser.set_active(self.profile_profile_to_ids[layout_item['profile']])
         else:
             chooser.set_active(0)
 
-        if layout_item.has_key('directory') and layout_item['directory'] != '':
+        if 'directory' in layout_item and layout_item['directory'] != '':
             workdir.set_text(layout_item['directory'])
         else:
             workdir.set_text('')
@@ -1548,9 +1548,9 @@ class LayoutEditor:
         self.config.save()
 
 if __name__ == '__main__':
-    import util
+    from . import util
     util.DEBUG = True
-    import terminal
+    from . import terminal
     TERM = terminal.Terminal()
     PREFEDIT = PrefsEditor(TERM)
 

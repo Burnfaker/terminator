@@ -6,11 +6,11 @@
 import gobject
 import gtk
 
-from factory import Factory
-from config import Config
-from util import dbg, err
-from translation import _
-from signalman import Signalman
+from .factory import Factory
+from .config import Config
+from .util import dbg, err
+from .translation import _
+from .signalman import Signalman
 
 # pylint: disable-msg=R0921
 class Container(object):
@@ -276,7 +276,7 @@ the %s will also close all terminals within it.') % (reqtype, reqtype))
         if mytype == 'Notebook':
             labels = []
             last_active_term = []
-            for tabnum in xrange(0, self.get_n_pages()):
+            for tabnum in range(0, self.get_n_pages()):
                 page = self.get_nth_page(tabnum)
                 label = self.get_tab_label(page)
                 labels.append(label.get_custom_label())
